@@ -1,14 +1,8 @@
 spring:
-  application:
-    name: catalog-service
-
-server:
-  port: 8080
-
   datasource:
     url: jdbc:mysql://localhost:3306/bookcatalogdb
     username: root
-    password: Luckymydog8080$
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -18,9 +12,16 @@ server:
       hibernate:
         format_sql: true
 
+  application:
+    name: catalog-service
+
+
 
 aws:
   region: us-east-2
   sns:
-    livro-criado-topic-arn: ""
-    livro-atualizado-topic-arn: ""
+    livro-criado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-criado-topic"
+    livro-atualizado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-atualizado-topic"
+
+server:
+  port: 8080

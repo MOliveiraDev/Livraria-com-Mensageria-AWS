@@ -1,6 +1,6 @@
-package com.microsservice.catalog_service.dto.book;
+package com.microsservice.catalog_service.dto;
 
-public record CreateBookRequest(
+public record BookRequestDTO(
 
         String title,
         String author,

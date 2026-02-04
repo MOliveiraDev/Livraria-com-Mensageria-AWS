@@ -1,7 +1,10 @@
+spring:
+  application:
+    name: catalog-service
+
 server:
   port: 8080
 
-spring:
   datasource:
     url: jdbc:mysql://localhost:3306/bookcatalogdb
     username: root
@@ -14,3 +17,20 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+
+cloud:
+    aws:
+      sqs:
+        enabled: true
+      sns:
+        enabled: true
+
+aws:
+  region: sa-east-1
+  sns:
+    pedido-criado-topic-arn: ""
+  sqs:
+    pagamento-processado-queue: ""
+
+

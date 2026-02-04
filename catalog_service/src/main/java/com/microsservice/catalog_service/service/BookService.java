@@ -4,6 +4,7 @@ import com.microsservice.catalog_service.domain.BookEntity;
 import com.microsservice.catalog_service.domain.StockEntity;
 import com.microsservice.catalog_service.dto.book.CreateBookRequest;
 import com.microsservice.catalog_service.dto.book.CreateBookResponse;
+import com.microsservice.catalog_service.enums.BookStatus;
 import com.microsservice.catalog_service.repository.BookRepository;
 import com.microsservice.catalog_service.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class BookService {
         book.setTitle(createBookRequest.title());
         book.setAuthor(createBookRequest.author());
         book.setIsbn(createBookRequest.isbn());
+        book.setStatus(determineBookStatus(createBookRequest.quantity()));
 
         StockEntity stock = new StockEntity();
         stock.setBook(book);
@@ -40,8 +42,22 @@ public class BookService {
         bookExisting.setTitle(createBookRequest.title());
         bookExisting.setAuthor(createBookRequest.author());
         bookExisting.setIsbn(createBookRequest.isbn());
+        bookExisting.setStatus(determineBookStatus(createBookRequest.quantity()));
+        
+        StockEntity stock = stockRepository.findByBook(bookExisting)
+                .orElseThrow(() -> new RuntimeException("Stock not found"));
+        stock.setQuantity(createBookRequest.quantity());
+        
         bookRepository.save(bookExisting);
+        stockRepository.save(stock);
         return new CreateBookResponse("Book updated successfully");
+    }
+
+    private BookStatus determineBookStatus(Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            return BookStatus.UNAVAILABLE;
+        }
+        return BookStatus.AVAILABLE;
     }
 
 

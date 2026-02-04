@@ -19,18 +19,8 @@ server:
         format_sql: true
 
 
-cloud:
-    aws:
-      sqs:
-        enabled: true
-      sns:
-        enabled: true
-
 aws:
-  region: sa-east-1
+  region: us-east-2
   sns:
-    pedido-criado-topic-arn: ""
-  sqs:
-    pagamento-processado-queue: ""
-
-
+    livro-criado-topic-arn: ""
+    livro-atualizado-topic-arn: ""

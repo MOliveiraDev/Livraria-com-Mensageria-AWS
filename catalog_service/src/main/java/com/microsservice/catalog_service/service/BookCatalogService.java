@@ -36,7 +36,7 @@ public class BookCatalogService {
                 .map(book -> {
                     StockEntity stock = stockRepository.findByBook(book).orElse(null);
                     return new BookResponseDTO(
-                            null,
+                            book.getBookId(),
                             book.getTitle(),
                             book.getAuthor(),
                             book.getIsbn(),

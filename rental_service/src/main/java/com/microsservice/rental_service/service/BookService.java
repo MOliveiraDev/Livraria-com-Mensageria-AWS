@@ -27,12 +27,15 @@ public class BookService {
     }
 
     @Transactional
-    public void updateBookStatus(Long bookId, String status) {
-        BookEntity book = bookRepository.findByBookId(bookId)
-                .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + bookId));
+    public void updateBookStatus(BookCreatedEventDTO event) {
+        BookEntity book = bookRepository.findById(event.bookId())
+                .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + event.bookId()));
 
-        book.setStatus(status);
+        book.setTitle(event.title());
+        book.setStatus(event.status());
         bookRepository.save(book);
-        log.info("Status do livro atualizado - ID: {}, Novo Status: {}", bookId, status);
+
+        log.info("Livro atualizado - ID: {}, Título: {}, Status: {}", event.bookId(), event.title(), event.status());
     }
+
 }

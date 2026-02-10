@@ -23,5 +23,6 @@ aws:
     livro-criado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-criado-topic"
     livro-atualizado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-atualizado-topic"
 
+
 server:
   port: 8080

@@ -23,12 +23,12 @@ public class BookCatalogController {
     }
 
     @PostMapping("/createBook")
-    public ResponseEntity<BookCatalogResponseDTO> createBook(@Valid BookCatalogRequestDTO bookCatalogRequestDTO) {
+    public ResponseEntity<BookCatalogResponseDTO> createBook(@RequestBody @Valid BookCatalogRequestDTO bookCatalogRequestDTO) {
         return ResponseEntity.ok(bookCatalogService.createBook(bookCatalogRequestDTO));
     }
 
     @PutMapping("/updateBook")
-    public ResponseEntity<BookCatalogResponseDTO> updateBook(@RequestParam("id")  Long id, @Valid BookCatalogRequestDTO bookCatalogRequestDTO) {
+    public ResponseEntity<BookCatalogResponseDTO> updateBook(@RequestParam("id")  Long id, @RequestBody @Valid BookCatalogRequestDTO bookCatalogRequestDTO) {
         return ResponseEntity.ok(bookCatalogService.updateBook(id, bookCatalogRequestDTO));
     }
 }

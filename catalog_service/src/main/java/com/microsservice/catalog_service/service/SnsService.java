@@ -1,5 +1,6 @@
 package com.microsservice.catalog_service.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,13 +12,14 @@ import software.amazon.awssdk.services.sns.SnsAsyncClient;
 public class SnsService {
 
     private final SnsAsyncClient snsAsyncClient;
+    private final ObjectMapper objectMapper;
 
-    public void sendMessage(String topicArn, String message) {
+    public void sendEvent(String topicArn, Object event) {
         try {
+            String message = objectMapper.writeValueAsString(event);
             snsAsyncClient.publish(builder -> builder.topicArn(topicArn).message(message));
         } catch (Exception e) {
-            log.error("Erro ao enviar mensagem SNS: {}", e.getMessage());
-
+            log.error("Erro ao enviar evento SNS: {}", e.getMessage());
         }
     }
 }

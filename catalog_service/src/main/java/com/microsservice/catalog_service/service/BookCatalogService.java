@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BookService {
+public class BookCatalogService {
 
     private final BookRepository bookRepository;
     private final StockRepository stockRepository;

@@ -25,4 +25,14 @@ public class BookService {
         bookRepository.save(book);
         log.info("Livro salvo no rental_service - ID: {}, Título: {}", event.bookId(), event.title());
     }
+
+    @Transactional
+    public void updateBookStatus(Long bookId, String status) {
+        BookEntity book = bookRepository.findByBookId(bookId)
+                .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + bookId));
+
+        book.setStatus(status);
+        bookRepository.save(book);
+        log.info("Status do livro atualizado - ID: {}, Novo Status: {}", bookId, status);
+    }
 }

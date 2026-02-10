@@ -4,6 +4,8 @@ import com.microsservice.catalog_service.domain.BookEntity;
 import com.microsservice.catalog_service.domain.StockEntity;
 import com.microsservice.catalog_service.dto.BookCatalogRequestDTO;
 import com.microsservice.catalog_service.dto.BookCatalogResponseDTO;
+import com.microsservice.catalog_service.dto.BookCreatedEventDTO;
+import com.microsservice.catalog_service.dto.BookUpdatedEventDTO;
 import com.microsservice.catalog_service.enums.BookStatus;
 import com.microsservice.catalog_service.exception.book.ISBNWasExistingException;
 import com.microsservice.catalog_service.repository.BookRepository;
@@ -74,18 +76,14 @@ public class BookCatalogService {
             stockRepository.save(stock);
             log.info("Livro criado com sucesso: ID {}", savedBook.getBookId());
 
-            // Enviar mensagem SNS
-            String message = String.format("Livro criado - Título: %s, Autor: %s, Estoque: %d", 
-                    savedBook.getTitle(), savedBook.getAuthor(), stock.getQuantity());
-            log.info("Enviando mensagem SNS: {}", message);
-            snsService.sendMessage(livroCriadoTopicArn, message);
-
-            // Verificar estoque baixo
-            if (stock.getQuantity() <= 5) {
-                String lowStockMessage = String.format("Alerta: Estoque baixo - %s (%d unidades)", 
-                        savedBook.getTitle(), stock.getQuantity());
-                snsService.sendMessage(livroCriadoTopicArn, lowStockMessage);
-            }
+            // Enviar evento estruturado SNS
+            BookCreatedEventDTO event = new BookCreatedEventDTO(
+                    savedBook.getBookId(),
+                    savedBook.getTitle(),
+                    savedBook.getStatus()
+            );
+            log.info("Enviando evento SNS: {}", event);
+            snsService.sendEvent(livroCriadoTopicArn, event);
 
             return new BookCatalogResponseDTO(
                     null,  
@@ -115,11 +113,9 @@ public class BookCatalogService {
                 throw new ISBNWasExistingException("ISBN já existe em outro livro: " + bookCatalogRequestDTO.isbn());
             }
 
-            // Capturar valores antigos para comparação
-            Integer oldQuantity = null;
             StockEntity stock = stockRepository.findByBook(bookExisting)
                     .orElseThrow(() -> new RuntimeException("Stock not found for book ID: " + id));
-            oldQuantity = stock.getQuantity();
+
 
             // Atualizar dados do livro
             bookExisting.setTitle(bookCatalogRequestDTO.title());
@@ -135,18 +131,14 @@ public class BookCatalogService {
             stockRepository.save(stock);
             log.info("Livro atualizado com sucesso: ID {}", updatedBook.getBookId());
 
-            // Enviar mensagem SNS
-            String message = String.format("Livro atualizado - Título: %s, Autor: %s, Estoque: %d (anterior: %d)", 
-                    updatedBook.getTitle(), updatedBook.getAuthor(), stock.getQuantity(), oldQuantity);
-            log.info("Enviando mensagem SNS: {}", message);
-            snsService.sendMessage(livroAtualizadoTopicArn, message);
-
-            // Verificar estoque baixo
-            if (stock.getQuantity() <= 5) {
-                String lowStockMessage = String.format("Alerta: Estoque baixo após atualização - %s (%d unidades)", 
-                        updatedBook.getTitle(), stock.getQuantity());
-                snsService.sendMessage(livroAtualizadoTopicArn, lowStockMessage);
-            }
+            // Enviar evento estruturado SNS
+            BookUpdatedEventDTO event = new BookUpdatedEventDTO(
+                    updatedBook.getBookId(),
+                    updatedBook.getTitle(),
+                    updatedBook.getStatus()
+            );
+            log.info("Enviando evento SNS: {}", event);
+            snsService.sendEvent(livroAtualizadoTopicArn, event);
 
             return new BookCatalogResponseDTO(
                     null,  

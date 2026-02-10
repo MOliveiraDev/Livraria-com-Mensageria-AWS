@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: rental_service
+  datasource:
+      url: jdbc:mysql://localhost:3306/rentaldb
+      username: root
+      password: ${DB_PASSWORD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true
+
+aws:
+  region: us-east-2
+  sns:
+    livro-alugado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-alugado-topic"
+  sqs:
+    book-created-queue: livro-criado-queue
+    book-updated-queue: livro-atualizado-queue
+
+server:
+  port: 8081

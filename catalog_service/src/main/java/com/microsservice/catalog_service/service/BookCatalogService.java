@@ -2,8 +2,8 @@ package com.microsservice.catalog_service.service;
 
 import com.microsservice.catalog_service.domain.BookEntity;
 import com.microsservice.catalog_service.domain.StockEntity;
-import com.microsservice.catalog_service.dto.BookRequestDTO;
-import com.microsservice.catalog_service.dto.BookResponseDTO;
+import com.microsservice.catalog_service.dto.BookCatalogRequestDTO;
+import com.microsservice.catalog_service.dto.BookCatalogResponseDTO;
 import com.microsservice.catalog_service.enums.BookStatus;
 import com.microsservice.catalog_service.exception.book.ISBNWasExistingException;
 import com.microsservice.catalog_service.repository.BookRepository;
@@ -31,11 +31,11 @@ public class BookCatalogService {
     @Value("${aws.sns.livro-atualizado-topic-arn}")
     private String livroAtualizadoTopicArn;
 
-    public List<BookResponseDTO> getAllBooks() {
+    public List<BookCatalogResponseDTO> getAllBooks() {
         return bookRepository.findAll().stream()
                 .map(book -> {
                     StockEntity stock = stockRepository.findByBook(book).orElse(null);
-                    return new BookResponseDTO(
+                    return new BookCatalogResponseDTO(
                             book.getBookId(),
                             book.getTitle(),
                             book.getAuthor(),
@@ -50,23 +50,23 @@ public class BookCatalogService {
 
 
     @Transactional(rollbackFor = Exception.class)
-    public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
+    public BookCatalogResponseDTO createBook(BookCatalogRequestDTO bookCatalogRequestDTO) {
         try {
-            log.info("Criando livro: {}", bookRequestDTO.title());
+            log.info("Criando livro: {}", bookCatalogRequestDTO.title());
             
 
-            if (bookRepository.existsByIsbn(bookRequestDTO.isbn())) {
-                throw new ISBNWasExistingException("ISBN já existe: " + bookRequestDTO.isbn());
+            if (bookRepository.existsByIsbn(bookCatalogRequestDTO.isbn())) {
+                throw new ISBNWasExistingException("ISBN já existe: " + bookCatalogRequestDTO.isbn());
             }
             
             BookEntity book = new BookEntity();
-            book.setTitle(bookRequestDTO.title());
-            book.setAuthor(bookRequestDTO.author());
-            book.setIsbn(bookRequestDTO.isbn());
-            book.setStatus(determineBookStatus(bookRequestDTO.quantity()));
+            book.setTitle(bookCatalogRequestDTO.title());
+            book.setAuthor(bookCatalogRequestDTO.author());
+            book.setIsbn(bookCatalogRequestDTO.isbn());
+            book.setStatus(determineBookStatus(bookCatalogRequestDTO.quantity()));
 
             StockEntity stock = new StockEntity();
-            stock.setQuantity(bookRequestDTO.quantity());
+            stock.setQuantity(bookCatalogRequestDTO.quantity());
             stock.setBook(book);
 
             // Salvar livro e estoque
@@ -87,7 +87,7 @@ public class BookCatalogService {
                 snsService.sendMessage(livroCriadoTopicArn, lowStockMessage);
             }
 
-            return new BookResponseDTO(
+            return new BookCatalogResponseDTO(
                     null,  
                     savedBook.getTitle(),
                     savedBook.getAuthor(),
@@ -103,16 +103,16 @@ public class BookCatalogService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public BookResponseDTO updateBook(Long id, BookRequestDTO bookRequestDTO) {
+    public BookCatalogResponseDTO updateBook(Long id, BookCatalogRequestDTO bookCatalogRequestDTO) {
         try {
             log.info("Atualizando livro ID: {}", id);
             
             BookEntity bookExisting = bookRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Book not found with ID: " + id));
 
-            if (!bookExisting.getIsbn().equals(bookRequestDTO.isbn()) &&
-                bookRepository.existsByIsbn(bookRequestDTO.isbn())) {
-                throw new ISBNWasExistingException("ISBN já existe em outro livro: " + bookRequestDTO.isbn());
+            if (!bookExisting.getIsbn().equals(bookCatalogRequestDTO.isbn()) &&
+                bookRepository.existsByIsbn(bookCatalogRequestDTO.isbn())) {
+                throw new ISBNWasExistingException("ISBN já existe em outro livro: " + bookCatalogRequestDTO.isbn());
             }
 
             // Capturar valores antigos para comparação
@@ -122,13 +122,13 @@ public class BookCatalogService {
             oldQuantity = stock.getQuantity();
 
             // Atualizar dados do livro
-            bookExisting.setTitle(bookRequestDTO.title());
-            bookExisting.setAuthor(bookRequestDTO.author());
-            bookExisting.setIsbn(bookRequestDTO.isbn());
-            bookExisting.setStatus(determineBookStatus(bookRequestDTO.quantity()));
+            bookExisting.setTitle(bookCatalogRequestDTO.title());
+            bookExisting.setAuthor(bookCatalogRequestDTO.author());
+            bookExisting.setIsbn(bookCatalogRequestDTO.isbn());
+            bookExisting.setStatus(determineBookStatus(bookCatalogRequestDTO.quantity()));
 
             // Atualizar estoque
-            stock.setQuantity(bookRequestDTO.quantity());
+            stock.setQuantity(bookCatalogRequestDTO.quantity());
 
             // Salvar alterações
             BookEntity updatedBook = bookRepository.save(bookExisting);
@@ -148,7 +148,7 @@ public class BookCatalogService {
                 snsService.sendMessage(livroAtualizadoTopicArn, lowStockMessage);
             }
 
-            return new BookResponseDTO(
+            return new BookCatalogResponseDTO(
                     null,  
                     updatedBook.getTitle(),
                     updatedBook.getAuthor(),

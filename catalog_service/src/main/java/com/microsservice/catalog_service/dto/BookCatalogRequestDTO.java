@@ -1,6 +1,6 @@
 package com.microsservice.catalog_service.dto;
 
-public record BookRequestDTO(
+public record BookCatalogRequestDTO(
 
         String title,
         String author,

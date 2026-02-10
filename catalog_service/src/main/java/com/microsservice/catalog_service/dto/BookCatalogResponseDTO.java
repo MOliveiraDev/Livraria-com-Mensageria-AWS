@@ -2,7 +2,7 @@ package com.microsservice.catalog_service.dto;
 
 import com.microsservice.catalog_service.enums.BookStatus;
 
-public record BookResponseDTO(
+public record BookCatalogResponseDTO(
         Long bookId,
         String title,
         String author,

@@ -86,7 +86,7 @@ public class BookCatalogService {
             snsService.sendEvent(livroCriadoTopicArn, event);
 
             return new BookCatalogResponseDTO(
-                    null,  
+                    savedBook.getBookId(),
                     savedBook.getTitle(),
                     savedBook.getAuthor(),
                     savedBook.getIsbn(),
@@ -141,7 +141,7 @@ public class BookCatalogService {
             snsService.sendEvent(livroAtualizadoTopicArn, event);
 
             return new BookCatalogResponseDTO(
-                    null,  
+                    updatedBook.getBookId(),
                     updatedBook.getTitle(),
                     updatedBook.getAuthor(),
                     updatedBook.getIsbn(),

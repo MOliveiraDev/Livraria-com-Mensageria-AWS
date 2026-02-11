@@ -4,6 +4,8 @@ import com.microsservice.rental_service.domain.RentalEntity;
 import com.microsservice.rental_service.dto.RentalCreatedEventDTO;
 import com.microsservice.rental_service.dto.RentalRequestDTO;
 import com.microsservice.rental_service.dto.RentalResponseDTO;
+import com.microsservice.rental_service.exception.rental.BookNotFoundException;
+import com.microsservice.rental_service.exception.rental.RentalCreationException;
 import com.microsservice.rental_service.repository.BookRepository;
 import com.microsservice.rental_service.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,35 +29,36 @@ public class RentalService {
     private String livroAludagoTopicArn;
 
     @Transactional(rollbackFor = Exception.class)
-    public RentalResponseDTO createRental(RentalRequestDTO rentalRequestDTO, Long bookId) {
+    public RentalResponseDTO createRental(RentalRequestDTO rentalRequestDTO) {
         try {
-            if (!bookRepository.existsById(bookId)) {
-                throw new RuntimeException("Book not found with ID: " + bookId);
+            for (Long bookId : rentalRequestDTO.bookIds()) {
+                if (!bookRepository.existsById(bookId)) {
+                    throw new BookNotFoundException("Book not found with ID: " + bookId);
+                }
+
+                RentalEntity rental = new RentalEntity();
+                rental.setBookId(bookId);
+                rental.setEmail(rentalRequestDTO.email());
+                rental.setRentalDate(rentalRequestDTO.returnDate().minusDays(12));
+                rentalRepository.save(rental);
+
+                RentalCreatedEventDTO event = new RentalCreatedEventDTO(
+                        rental.getBookId(),
+                        rental.getEmail(),
+                        rental.getReturnDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
+                );
+                log.info("Enviando evento SNS: {}", event);
+                snsService.sendEvent(livroAludagoTopicArn, event);
             }
-
-            RentalEntity rental = new RentalEntity();
-            rental.setBookId(rentalRequestDTO.bookId());
-            rental.setEmail(rentalRequestDTO.email());
-            rental.setRentalDate(rentalRequestDTO.returnDate().minusDays(12));
-            rentalRepository.save(rental);
-
-            RentalCreatedEventDTO event = new RentalCreatedEventDTO(
-                    rental.getBookId(),
-                    rental.getEmail(),
-                    rental.getReturnDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
-            );
-            log.info("Enviando evento SNS: {}", event);
-            snsService.sendEvent(livroAludagoTopicArn, event);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error creating rental: {}", e.getMessage());
-            throw new RuntimeException("Failed to create rental: " + e.getMessage());
+            throw new RentalCreationException("Failed to create rental: " + e.getMessage());
         }
-    return new RentalResponseDTO(
-            rentalRequestDTO.bookId(),
-            rentalRequestDTO.email(),
-            rentalRequestDTO.returnDate(),
-            rentalRequestDTO.returnDate().minusDays(12)
+        return new RentalResponseDTO(
+                rentalRequestDTO.bookIds(),
+                rentalRequestDTO.email(),
+                rentalRequestDTO.returnDate(),
+                rentalRequestDTO.returnDate().minusDays(12)
         );
     }
 }

@@ -1,5 +1,6 @@
 package com.microsservice.rental_service.service;
 
+import com.microsservice.rental_service.domain.BookEntity;
 import com.microsservice.rental_service.domain.RentalEntity;
 import com.microsservice.rental_service.dto.RentalCreatedEventDTO;
 import com.microsservice.rental_service.dto.RentalRequestDTO;
@@ -58,7 +59,7 @@ public class RentalService {
             throw new RentalCreationException("Failed to create rental: " + e.getMessage());
         }
         return new RentalResponseDTO(
-                rentalRequestDTO.bookIds(),
+                rentalRequestDTO.bookIds().stream().map(id -> bookRepository.findByBookId(id).get().getTitle()).toList(),
                 rentalRequestDTO.email(),
                 rentalRequestDTO.returnDate(),
                 LocalDate.now()
@@ -71,7 +72,11 @@ public class RentalService {
                 .collect(java.util.stream.Collectors.groupingBy(RentalEntity::getEmail))
                 .entrySet().stream()
                 .map(entry -> new RentalResponseDTO(
-                        entry.getValue().stream().map(RentalEntity::getBookId).toList(),
+                        entry.getValue().stream()
+                                .map(rental -> bookRepository.findById(rental.getBookId())
+                                        .map(BookEntity::getTitle)
+                                        .orElse("Unknown Book"))
+                                .toList(),
                         entry.getKey(),
                         entry.getValue().getFirst().getReturnDate(),
                         entry.getValue().getFirst().getRentalDate()

@@ -55,12 +55,12 @@ public class BookCatalogService {
     public BookCatalogResponseDTO createBook(BookCatalogRequestDTO bookCatalogRequestDTO) {
         try {
             log.info("Criando livro: {}", bookCatalogRequestDTO.title());
-            
+
 
             if (bookRepository.existsByIsbn(bookCatalogRequestDTO.isbn())) {
                 throw new ISBNWasExistingException("ISBN já existe: " + bookCatalogRequestDTO.isbn());
             }
-            
+
             BookEntity book = new BookEntity();
             book.setTitle(bookCatalogRequestDTO.title());
             book.setAuthor(bookCatalogRequestDTO.author());
@@ -82,7 +82,6 @@ public class BookCatalogService {
                     savedBook.getTitle(),
                     savedBook.getStatus()
             );
-            log.info("Enviando evento SNS: {}", event);
             snsService.sendEvent(livroCriadoTopicArn, event);
 
             return new BookCatalogResponseDTO(
@@ -104,12 +103,12 @@ public class BookCatalogService {
     public BookCatalogResponseDTO updateBook(Long id, BookCatalogRequestDTO bookCatalogRequestDTO) {
         try {
             log.info("Atualizando livro ID: {}", id);
-            
+
             BookEntity bookExisting = bookRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Book not found with ID: " + id));
 
             if (!bookExisting.getIsbn().equals(bookCatalogRequestDTO.isbn()) &&
-                bookRepository.existsByIsbn(bookCatalogRequestDTO.isbn())) {
+                    bookRepository.existsByIsbn(bookCatalogRequestDTO.isbn())) {
                 throw new ISBNWasExistingException("ISBN já existe em outro livro: " + bookCatalogRequestDTO.isbn());
             }
 
@@ -162,5 +161,31 @@ public class BookCatalogService {
         return BookStatus.AVAILABLE;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStockOnRental(Long bookId) {
+        BookEntity book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found with ID: " + bookId));
 
+        StockEntity stock = stockRepository.findByBook(book)
+                .orElseThrow(() -> new RuntimeException("Stock not found for book ID: " + bookId));
+
+        if (stock.getQuantity() <= 0) {
+            throw new RuntimeException("No stock available for book ID: " + bookId);
+        }
+
+        stock.setQuantity(stock.getQuantity() - 1);
+        book.setStatus(determineBookStatus(stock.getQuantity()));
+
+        stockRepository.save(stock);
+        bookRepository.save(book);
+        log.info("Estoque atualizado para livro ID {}: nova quantidade = {}", bookId, stock.getQuantity());
+
+        BookUpdatedEventDTO event = new BookUpdatedEventDTO(
+                book.getBookId(),
+                book.getTitle(),
+                book.getStatus()
+        );
+        log.info("Enviando evento SNS após atualização de estoque: {}", event);
+        snsService.sendEvent(livroAtualizadoTopicArn, event);
+    }
 }

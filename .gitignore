@@ -38,4 +38,5 @@ build/
 ### Terraform ###
 *.tfstate
 *.tfstate.backup
+*.terraform.lock.hcl
 .terraform/

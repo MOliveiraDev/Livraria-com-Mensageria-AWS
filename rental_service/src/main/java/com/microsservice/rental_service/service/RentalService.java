@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -40,7 +41,8 @@ public class RentalService {
                 RentalEntity rental = new RentalEntity();
                 rental.setBookId(bookId);
                 rental.setEmail(rentalRequestDTO.email());
-                rental.setRentalDate(rentalRequestDTO.returnDate().minusDays(12));
+                rental.setRentalDate(LocalDate.now());
+                rental.setReturnDate(rentalRequestDTO.returnDate());
                 rentalRepository.save(rental);
 
                 RentalCreatedEventDTO event = new RentalCreatedEventDTO(
@@ -59,7 +61,7 @@ public class RentalService {
                 rentalRequestDTO.bookIds(),
                 rentalRequestDTO.email(),
                 rentalRequestDTO.returnDate(),
-                rentalRequestDTO.returnDate().minusDays(12)
+                LocalDate.now()
         );
     }
 

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -60,5 +61,19 @@ public class RentalService {
                 rentalRequestDTO.returnDate(),
                 rentalRequestDTO.returnDate().minusDays(12)
         );
+    }
+
+    public List<RentalResponseDTO> getRentalsByEmail(String email) {
+        List<RentalEntity> rentals = rentalRepository.findByEmail(email);
+        return rentals.stream()
+                .collect(java.util.stream.Collectors.groupingBy(RentalEntity::getEmail))
+                .entrySet().stream()
+                .map(entry -> new RentalResponseDTO(
+                        entry.getValue().stream().map(RentalEntity::getBookId).toList(),
+                        entry.getKey(),
+                        entry.getValue().getFirst().getReturnDate(),
+                        entry.getValue().getFirst().getRentalDate()
+                ))
+                .toList();
     }
 }

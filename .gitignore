@@ -34,3 +34,8 @@ build/
 
 ### Env files ###
 .env
+
+### Terraform ###
+*.tfstate
+*.tfstate.backup
+.terraform/

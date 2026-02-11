@@ -1,7 +1,7 @@
 package com.microsservice.rental_service.service;
 
 import com.microsservice.rental_service.domain.BookEntity;
-import com.microsservice.rental_service.dto.BookCreatedEventDTO;
+import com.microsservice.rental_service.dto.BookReceivedEventDTO;
 import com.microsservice.rental_service.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ public class BookService {
     private final BookRepository bookRepository;
 
     @Transactional
-    public void saveBook(BookCreatedEventDTO event) {
+    public void saveBook(BookReceivedEventDTO event) {
         BookEntity book = new BookEntity();
         book.setBookId(event.bookId());
         book.setTitle(event.title());
@@ -27,7 +27,7 @@ public class BookService {
     }
 
     @Transactional
-    public void updateBookStatus(BookCreatedEventDTO event) {
+    public void updateBookStatus(BookReceivedEventDTO event) {
         BookEntity book = bookRepository.findById(event.bookId())
                 .orElseThrow(() -> new RuntimeException("Livro não encontrado: " + event.bookId()));
 

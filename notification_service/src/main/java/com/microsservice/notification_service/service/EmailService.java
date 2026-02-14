@@ -31,7 +31,7 @@ public class EmailService {
 
             mailSender.send(message);
 
-            NotificationEntity notification = new NotificationEntity();;
+            NotificationEntity notification = new NotificationEntity();
             notification.setEmail(email);
             notification.setMessage(message.getText());
             notification.setSentAt(LocalDateTime.now());

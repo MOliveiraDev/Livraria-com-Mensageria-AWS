@@ -18,6 +18,8 @@ aws:
   region: us-east-2
   sns:
     livro-alugado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-alugado-topic"
+    rental-reminder-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:rental-reminder-topic"
+    book-returned-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:book-returned-topic"
   sqs:
     book-created-queue: livro-criado-queue
     book-updated-queue: livro-atualizado-queue

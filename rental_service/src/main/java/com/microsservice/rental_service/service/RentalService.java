@@ -12,12 +12,14 @@ import com.microsservice.rental_service.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +34,8 @@ public class RentalService {
     private String livroAludagoTopicArn;
 
     @Transactional(rollbackFor = Exception.class)
-    public RentalResponseDTO createRental(RentalRequestDTO rentalRequestDTO) {
+    @Async
+    public CompletableFuture<RentalResponseDTO> createRental(RentalRequestDTO rentalRequestDTO) {
         try {
             for (Long bookId : rentalRequestDTO.bookIds()) {
                 if (!bookRepository.existsById(bookId)) {
@@ -46,8 +49,13 @@ public class RentalService {
                 rental.setReturnDate(rentalRequestDTO.returnDate());
                 rentalRepository.save(rental);
 
+                String bookTitle = bookRepository.findById(bookId)
+                        .map(BookEntity::getTitle)
+                        .orElse("Unknown Book");
+
                 RentalCreatedEventDTO event = new RentalCreatedEventDTO(
                         rental.getBookId(),
+                        bookTitle,
                         rental.getEmail(),
                         rental.getReturnDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
                 );
@@ -58,12 +66,12 @@ public class RentalService {
             log.error("Error creating rental: {}", e.getMessage());
             throw new RentalCreationException("Failed to create rental: " + e.getMessage());
         }
-        return new RentalResponseDTO(
+        return CompletableFuture.completedFuture(new RentalResponseDTO(
                 rentalRequestDTO.bookIds().stream().map(id -> bookRepository.findByBookId(id).get().getTitle()).toList(),
                 rentalRequestDTO.email(),
                 rentalRequestDTO.returnDate(),
                 LocalDate.now()
-        );
+        ));
     }
 
     public List<RentalResponseDTO> getRentalsByEmail(String email) {

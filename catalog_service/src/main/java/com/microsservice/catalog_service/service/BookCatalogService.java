@@ -105,7 +105,7 @@ public class BookCatalogService {
             log.info("Atualizando livro ID: {}", id);
 
             BookEntity bookExisting = bookRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Book not found with ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("Book not found"));
 
             if (!bookExisting.getIsbn().equals(bookCatalogRequestDTO.isbn()) &&
                     bookRepository.existsByIsbn(bookCatalogRequestDTO.isbn())) {
@@ -113,7 +113,7 @@ public class BookCatalogService {
             }
 
             StockEntity stock = stockRepository.findByBook(bookExisting)
-                    .orElseThrow(() -> new RuntimeException("Stock not found for book ID: " + id));
+                    .orElseThrow(() -> new RuntimeException("Stock not found"));
 
 
             // Atualizar dados do livro
@@ -170,7 +170,7 @@ public class BookCatalogService {
                 .orElseThrow(() -> new RuntimeException("Stock not found for book ID: " + bookId));
 
         if (stock.getQuantity() <= 0) {
-            throw new RuntimeException("No stock available for book ID: " + bookId);
+            throw new IllegalArgumentException("No stock available for book ID: " + bookId);
         }
 
         stock.setQuantity(stock.getQuantity() - 1);
@@ -186,6 +186,29 @@ public class BookCatalogService {
                 book.getStatus()
         );
         log.info("Enviando evento SNS após atualização de estoque: {}", event);
+        snsService.sendEvent(livroAtualizadoTopicArn, event);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void returnBookToStock(Long bookId) {
+        BookEntity book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found with ID: " + bookId));
+
+        StockEntity stock = stockRepository.findByBook(book)
+                .orElseThrow(() -> new RuntimeException("Stock not found for book ID: " + bookId));
+
+        stock.setQuantity(stock.getQuantity() + 1);
+        book.setStatus(determineBookStatus(stock.getQuantity()));
+
+        stockRepository.save(stock);
+        bookRepository.save(book);
+        log.info("Livro devolvido - Estoque atualizado para livro ID {}: nova quantidade = {}", bookId, stock.getQuantity());
+
+        BookUpdatedEventDTO event = new BookUpdatedEventDTO(
+                book.getBookId(),
+                book.getTitle(),
+                book.getStatus()
+        );
         snsService.sendEvent(livroAtualizadoTopicArn, event);
     }
 }

@@ -20,7 +20,7 @@ aws:
   region: us-east-2
   sqs:
     livro-alugado-queue: livro-alugado-queue
-    rental-reminder-queue: rental-reminder-queue
+    livro-lembrete-queue: livro-lembrete-queue
 
 server:
   port: 8082

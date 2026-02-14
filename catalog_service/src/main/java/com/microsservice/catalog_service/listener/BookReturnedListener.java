@@ -17,7 +17,7 @@ public class BookReturnedListener {
     private final BookCatalogService bookCatalogService;
     private final ObjectMapper objectMapper;
 
-    @SqsListener("${aws.sqs.book-returned-queue}")
+    @SqsListener("${aws.sqs.livro-retornado-queue}")
     public void listen(String message) {
         try {
             log.info("Mensagem de devolução recebida: {}", message);

@@ -17,7 +17,7 @@ public class BookCreatedListener {
     private final BookService bookService;
     private final ObjectMapper objectMapper;
 
-    @SqsListener("${aws.sqs.book-created-queue}")
+    @SqsListener("${aws.sqs.livro-criado-queue}")
     public void listen(String message) {
         try {
             log.info("Mensagem recebida: {}", message);

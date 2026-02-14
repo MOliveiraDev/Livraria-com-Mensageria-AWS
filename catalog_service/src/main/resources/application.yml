@@ -24,7 +24,7 @@ aws:
     livro-atualizado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-atualizado-topic"
   sqs:
     livro-alugado-queue: livro-alugado-queue
-    book-returned-queue: book-returned-queue
+    livro-retornado-queue: livro-retornado-queue
 
 
 server:

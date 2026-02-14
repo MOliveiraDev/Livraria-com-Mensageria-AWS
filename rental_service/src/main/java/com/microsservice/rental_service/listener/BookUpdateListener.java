@@ -17,7 +17,7 @@ public class BookUpdateListener {
     private final BookService bookService;
     private final ObjectMapper objectMapper;
 
-    @SqsListener("${aws.sqs.book-updated-queue}")
+    @SqsListener("${aws.sqs.livro-atualizado-queue}")
     public void listen(String message) {
         try {
             log.info("Mensagem recebida: {}", message);

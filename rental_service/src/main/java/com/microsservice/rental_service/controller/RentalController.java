@@ -1,5 +1,6 @@
 package com.microsservice.rental_service.controller;
 
+import com.microsservice.rental_service.dto.BookReturnedCreatedEventDTO;
 import com.microsservice.rental_service.dto.RentalRequestDTO;
 import com.microsservice.rental_service.dto.RentalResponseDTO;
 import com.microsservice.rental_service.service.RentalService;
@@ -25,5 +26,11 @@ public class RentalController {
     @PostMapping("/createRental")
     public ResponseEntity<CompletableFuture<RentalResponseDTO>> createRental(@RequestBody RentalRequestDTO rentalRequestDTO) {
         return ResponseEntity.ok(rentalService.createRental(rentalRequestDTO));
+    }
+
+    @PostMapping("/returnBook")
+    public ResponseEntity<Void> returnBook(@RequestBody BookReturnedCreatedEventDTO bookReturnedCreatedEventDTO) {
+        rentalService.sendBookReturnedEvent(bookReturnedCreatedEventDTO.bookIds());
+        return ResponseEntity.ok().build();
     }
 }

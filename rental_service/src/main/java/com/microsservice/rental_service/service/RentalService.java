@@ -33,6 +33,9 @@ public class RentalService {
     @Value("${aws.sns.livro-alugado-topic-arn}")
     private String livroAludagoTopicArn;
 
+    @Value("${aws.sns.livro-retornado-topic-arn}")
+    private String bookReturnedTopicArn;
+
     @Transactional(rollbackFor = Exception.class)
     @Async
     public CompletableFuture<RentalResponseDTO> createRental(RentalRequestDTO rentalRequestDTO) {
@@ -90,5 +93,17 @@ public class RentalService {
                         entry.getValue().getFirst().getRentalDate()
                 ))
                 .toList();
+    }
+
+    public void sendBookReturnedEvent(List<Long> bookIds) {
+        for (Long bookId : bookIds) {
+            try {
+                String event = String.format("{\"bookId\":%d}", bookId);
+                snsService.sendEvent(bookReturnedTopicArn, event);
+                log.info("Evento de devolução enviado para bookId: {}", bookId);
+            } catch (Exception e) {
+                log.error("Erro ao enviar evento de devolução: {}", e.getMessage());
+            }
+        }
     }
 }

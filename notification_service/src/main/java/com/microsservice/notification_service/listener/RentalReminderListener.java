@@ -17,7 +17,7 @@ public class RentalReminderListener {
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
 
-    @SqsListener("${aws.sqs.rental-reminder-queue}")
+    @SqsListener("${aws.sqs.livro-lembrete-queue}")
     public void listen(String message) {
         try {
             log.info("Mensagem de lembrete recebida: {}", message);

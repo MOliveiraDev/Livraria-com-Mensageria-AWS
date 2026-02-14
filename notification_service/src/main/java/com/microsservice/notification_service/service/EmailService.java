@@ -1,10 +1,14 @@
 package com.microsservice.notification_service.service;
 
+import com.microsservice.notification_service.domain.NotificationEntity;
+import com.microsservice.notification_service.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -12,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final NotificationRepository notificationRepository;
 
     public void sendRentalConfirmation(String bookTitle, String email, String returnDate) {
         try {
@@ -25,6 +30,13 @@ public class EmailService {
                     "Obrigado por usar nosso serviço!");
 
             mailSender.send(message);
+
+            NotificationEntity notification = new NotificationEntity();;
+            notification.setEmail(email);
+            notification.setMessage(message.getText());
+            notification.setSentAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+
             log.info("E-mail enviado com sucesso para: {}", email);
         } catch (Exception e) {
             log.error("Erro ao enviar e-mail para {}: {}", email, e.getMessage());
@@ -43,6 +55,13 @@ public class EmailService {
                     "Obrigado!");
 
             mailSender.send(message);
+
+            NotificationEntity notification = new NotificationEntity();
+            notification.setEmail(email);
+            notification.setMessage(message.getText());
+            notification.setSentAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+
             log.info("Lembrete enviado com sucesso para: {}", email);
         } catch (Exception e) {
             log.error("Erro ao enviar lembrete para {}: {}", email, e.getMessage());

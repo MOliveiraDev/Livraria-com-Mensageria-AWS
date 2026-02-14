@@ -30,4 +30,22 @@ public class EmailService {
             log.error("Erro ao enviar e-mail para {}: {}", email, e.getMessage());
         }
     }
+
+    public void sendRentalReminder(String email, String reminderMessage, String returnDate) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Lembrete de Devolução de Livro");
+            message.setText("Olá,\n\n" +
+                    reminderMessage + "\n\n" +
+                    "Data de Devolução: " + returnDate + "\n\n" +
+                    "Por favor, não se esqueça de devolver o livro no prazo.\n\n" +
+                    "Obrigado!");
+
+            mailSender.send(message);
+            log.info("Lembrete enviado com sucesso para: {}", email);
+        } catch (Exception e) {
+            log.error("Erro ao enviar lembrete para {}: {}", email, e.getMessage());
+        }
+    }
 }

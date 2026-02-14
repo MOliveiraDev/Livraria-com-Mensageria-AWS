@@ -1,6 +1,8 @@
 package com.microsservice.rental_service.dto;
 
+import java.util.List;
+
 public record BookReturnedCreatedEventDTO(
-        Long bookId
+        List<Long> bookIds
 ) {
 }

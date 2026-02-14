@@ -67,4 +67,28 @@ public class EmailService {
             log.error("Erro ao enviar lembrete para {}: {}", email, e.getMessage());
         }
     }
+
+    public void sendBookReturnedConfirmation(String email, String bookTitle) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Confirmação de Devolução de Livro");
+            message.setText("Olá,\n\n" +
+                    "Sua devolução foi confirmada com sucesso!\n\n" +
+                    "Livro: " + bookTitle + "\n\n" +
+                    "Obrigado por usar nosso serviço!");
+
+            mailSender.send(message);
+
+            NotificationEntity notification = new NotificationEntity();
+            notification.setEmail(email);
+            notification.setMessage(message.getText());
+            notification.setSentAt(LocalDateTime.now());
+            notificationRepository.save(notification);
+
+            log.info("E-mail de devolução enviado com sucesso para: {}", email);
+        } catch (Exception e) {
+            log.error("Erro ao enviar e-mail de devolução para {}: {}", email, e.getMessage());
+        }
+    }
 }

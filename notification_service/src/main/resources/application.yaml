@@ -21,6 +21,7 @@ aws:
   sqs:
     livro-alugado-queue: livro-alugado-queue
     livro-lembrete-queue: livro-lembrete-queue
+    livro-retornado-queue: livro-retornado-queue
 
 server:
   port: 8082

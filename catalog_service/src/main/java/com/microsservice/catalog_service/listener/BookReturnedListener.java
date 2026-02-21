@@ -23,6 +23,13 @@ public class BookReturnedListener {
             log.info("Mensagem de devolução recebida: {}", message);
             JsonNode rootNode = objectMapper.readTree(message);
             String eventMessage = rootNode.get("Message").asText();
+
+            // Remove aspas extras se a mensagem estiver com escape duplo
+            if (eventMessage.startsWith("\"") && eventMessage.endsWith("\"")) {
+                eventMessage = eventMessage.substring(1, eventMessage.length() - 1)
+                        .replace("\\\"", "\"");
+            }
+
             BookReturnedReceivedEventDTO event = objectMapper.readValue(eventMessage, BookReturnedReceivedEventDTO.class);
             log.info("Evento de devolução processado: {}", event);
             bookCatalogService.returnBookToStock(event.bookId());

@@ -95,12 +95,20 @@ public class RentalService {
                 .toList();
     }
 
+    @Transactional
     public void sendBookReturnedEvent(List<Long> bookIds) {
         for (Long bookId : bookIds) {
             try {
                 String event = String.format("{\"bookId\":%d}", bookId);
                 snsService.sendEvent(bookReturnedTopicArn, event);
                 log.info("Evento de devolução enviado para bookId: {}", bookId);
+
+                // Remove o registro de aluguel após enviar o evento
+                List<RentalEntity> rentals = rentalRepository.findByBookId(bookId);
+                if (!rentals.isEmpty()) {
+                    rentalRepository.deleteAll(rentals);
+                    log.info("Registros de aluguel removidos para bookId: {}", bookId);
+                }
             } catch (Exception e) {
                 log.error("Erro ao enviar evento de devolução: {}", e.getMessage());
             }

@@ -1,6 +1,8 @@
 package com.microsservice.catalog_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record BookReturnedReceivedEventDTO(
-        Long bookId
+        @JsonProperty("bookId") Long bookId
 ) {
 }

@@ -2,7 +2,7 @@ package com.microsservice.catalog_service.listener;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsservice.catalog_service.dto.RentalCreatedEventDTO;
+import com.microsservice.catalog_service.dto.RentalRecivedEventDTO;
 import com.microsservice.catalog_service.service.BookCatalogService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class RentalCreatedListener {
             JsonNode rootNode = objectMapper.readTree(message);
             String eventMessage = rootNode.get("Message").asText();
 
-            RentalCreatedEventDTO event = objectMapper.readValue(eventMessage, RentalCreatedEventDTO.class);
+            RentalRecivedEventDTO event = objectMapper.readValue(eventMessage, RentalRecivedEventDTO.class);
             log.info("Evento processado: {}", event);
             bookCatalogService.updateStockOnRental(event.bookId());
         } catch (Exception e) {

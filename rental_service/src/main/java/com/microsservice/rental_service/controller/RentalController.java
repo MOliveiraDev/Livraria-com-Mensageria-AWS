@@ -1,8 +1,6 @@
 package com.microsservice.rental_service.controller;
 
-import com.microsservice.rental_service.dto.BookReturnedCreatedEventDTO;
-import com.microsservice.rental_service.dto.RentalRequestDTO;
-import com.microsservice.rental_service.dto.RentalResponseDTO;
+import com.microsservice.rental_service.dto.*;
 import com.microsservice.rental_service.service.RentalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +27,7 @@ public class RentalController {
     }
 
     @PostMapping("/returnBook")
-    public ResponseEntity<Void> returnBook(@RequestBody BookReturnedCreatedEventDTO bookReturnedCreatedEventDTO) {
-        rentalService.sendBookReturnedEvent(bookReturnedCreatedEventDTO.bookIds());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<BookReturnedResponseDTO> returnBook(@RequestBody BookReturnedRequestDTO returnedRequestDTO) {
+        return ResponseEntity.ok(rentalService.sendBookReturnedEvent(returnedRequestDTO));
     }
 }

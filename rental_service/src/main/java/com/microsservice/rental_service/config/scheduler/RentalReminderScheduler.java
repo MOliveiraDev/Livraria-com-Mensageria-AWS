@@ -1,6 +1,8 @@
 package com.microsservice.rental_service.config.scheduler;
 
 import com.microsservice.rental_service.domain.RentalEntity;
+import com.microsservice.rental_service.dto.BookReturnedCreatedEventDTO;
+import com.microsservice.rental_service.dto.BookReturnedRequestDTO;
 import com.microsservice.rental_service.repository.RentalRepository;
 import com.microsservice.rental_service.service.RentalService;
 import com.microsservice.rental_service.service.SnsService;
@@ -11,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +49,10 @@ public class RentalReminderScheduler {
                 sendReminder(rental, "Falta apenas 1 dia para devolver o livro!");
             } else if (daysUntilReturn == 0) {
                 sendReminder(rental, "Hoje é o dia de devolver o livro!");
-                rentalService.sendBookReturnedEvent(Collections.singletonList(rental.getBookId()));
+                rentalService.sendBookReturnedEvent(new BookReturnedRequestDTO(
+                        Collections.singletonList(rental.getBookId()),
+                        rental.getEmail()
+                ));
                 rentalRepository.delete(rental);
                 log.info("Aluguel ID {} removido - data de devolução atingida", rental.getRentalId());
             }

@@ -8,4 +8,6 @@ import java.util.List;
 public interface RentalRepository extends JpaRepository<RentalEntity, Long> {
     List<RentalEntity> findByEmail(String email);
     List<RentalEntity> findByBookId(Long bookId);
+
+    boolean existsByBookId(Long bookId);
 }

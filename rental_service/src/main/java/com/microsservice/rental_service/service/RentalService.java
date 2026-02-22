@@ -2,11 +2,10 @@ package com.microsservice.rental_service.service;
 
 import com.microsservice.rental_service.domain.BookEntity;
 import com.microsservice.rental_service.domain.RentalEntity;
-import com.microsservice.rental_service.dto.RentalCreatedEventDTO;
-import com.microsservice.rental_service.dto.RentalRequestDTO;
-import com.microsservice.rental_service.dto.RentalResponseDTO;
+import com.microsservice.rental_service.dto.*;
 import com.microsservice.rental_service.exception.rental.BookNotFoundException;
 import com.microsservice.rental_service.exception.rental.RentalCreationException;
+import com.microsservice.rental_service.exception.rental.RentalNotFoundException;
 import com.microsservice.rental_service.repository.BookRepository;
 import com.microsservice.rental_service.repository.RentalRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,9 +51,8 @@ public class RentalService {
                 rental.setReturnDate(rentalRequestDTO.returnDate());
                 rentalRepository.save(rental);
 
-                String bookTitle = bookRepository.findById(bookId)
-                        .map(BookEntity::getTitle)
-                        .orElse("Unknown Book");
+                String bookTitle = String.valueOf(bookRepository.findById(bookId)
+                        .map(BookEntity::getTitle));
 
                 RentalCreatedEventDTO event = new RentalCreatedEventDTO(
                         rental.getBookId(),
@@ -96,22 +94,37 @@ public class RentalService {
     }
 
     @Transactional
-    public void sendBookReturnedEvent(List<Long> bookIds) {
-        for (Long bookId : bookIds) {
+    public BookReturnedResponseDTO sendBookReturnedEvent(BookReturnedRequestDTO request) {
             try {
-                String event = String.format("{\"bookId\":%d}", bookId);
-                snsService.sendEvent(bookReturnedTopicArn, event);
-                log.info("Evento de devolução enviado para bookId: {}", bookId);
+                for (Long bookId : request.bookIds()) {
 
-                // Remove o registro de aluguel após enviar o evento
-                List<RentalEntity> rentals = rentalRepository.findByBookId(bookId);
-                if (!rentals.isEmpty()) {
-                    rentalRepository.deleteAll(rentals);
-                    log.info("Registros de aluguel removidos para bookId: {}", bookId);
+                    if (!bookRepository.existsById(bookId)) {
+                        throw new BookNotFoundException("Book not found with ID: " + bookId);
+                    }
+
+                    if (!rentalRepository.existsByBookId(bookId))  {
+                        throw new RentalNotFoundException("Book not rented with ID: " + bookId);
+                    }
+
+                    String bookTitle = (bookRepository.findByBookId(bookId)
+                            .map(BookEntity::getTitle)).orElse("Unknown Book");
+
+                    BookReturnedCreatedEventDTO event = new BookReturnedCreatedEventDTO(
+                            request.bookIds(),
+                            request.email()
+                    );
+                    snsService.sendEvent(bookReturnedTopicArn, event);
+                    log.info("Evento de devolução enviado para bookId: {} , email: {} e nome do livro {}", bookId, request.email(), bookTitle);
+
+                    List<RentalEntity> rentals = rentalRepository.findByBookId(bookId);
+                    if (!rentals.isEmpty()) {
+                        rentalRepository.deleteAll(rentals);
+                    }
                 }
+
             } catch (Exception e) {
-                log.error("Erro ao enviar evento de devolução: {}", e.getMessage());
+                log.error("Erro ao enviar a devolução: {}", e.getMessage());
             }
-        }
+        return new BookReturnedResponseDTO("Livros devolvidos com sucesso!");
     }
 }

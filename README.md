@@ -5,8 +5,7 @@
 
 ## Arquitetura do Projeto
 
-<img src="https://github.com/MOliveiraDev/Livraria-com-Mensageria-AWS/blob/main/assets/Livraria%20-%20AWS.jpg>"</img>
-
+<img src="https://github.com/MOliveiraDev/Livraria-com-Mensageria-AWS/blob/main/assets/Livraria%20-%20AWS.jpg"></img>
 <hr>
 
 ## Tecnologias Utilizadas

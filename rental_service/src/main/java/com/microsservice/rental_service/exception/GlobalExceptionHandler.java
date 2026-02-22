@@ -2,6 +2,7 @@ package com.microsservice.rental_service.exception;
 
 import com.microsservice.rental_service.exception.rental.BookNotFoundException;
 import com.microsservice.rental_service.exception.rental.RentalCreationException;
+import com.microsservice.rental_service.exception.rental.RentalNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,5 +31,16 @@ public class GlobalExceptionHandler {
                 java.time.LocalDateTime.now()
         );
         return ResponseEntity.badRequest().body(apiException);
+    }
+
+    @ExceptionHandler(RentalNotFoundException.class)
+    public ResponseEntity<ApiException> handleRentalNotFoundException(RentalNotFoundException e) {
+        ApiException apiException = new ApiException(
+                e.getMessage(),
+                "Rental not found",
+                HttpStatus.NOT_FOUND.value(),
+                java.time.LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiException);
     }
 }

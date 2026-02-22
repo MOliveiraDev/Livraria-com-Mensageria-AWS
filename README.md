@@ -16,15 +16,8 @@
 - Java Mail Sender
 - AWS: SQS / SNS
 - Jackson (para JSON)
-- Banco de dados relacional: MySQL
-- Banco de dados Não Relacional: MongoDB
-
-## Principais componentes
-- NotificationService / EmailService — responsável por criar e enviar eventos/ e‑mails.
-- snsService — wrapper para publicação em AWS SNS (usa topic ARN).
-- RentalRepository — repositório JPA para registros de aluguel.
-- Entidades JPA para Rental/Book (persistência).
-- Configuração via application.yml / variáveis de ambiente.
+- SQL: MySQL
+- NoSQL: MongoDB
 
 ## Requisitos
 - JDK 21+

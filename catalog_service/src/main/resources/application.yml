@@ -23,8 +23,8 @@ aws:
     livro-criado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-criado-topic"
     livro-atualizado-topic-arn: "arn:aws:sns:us-east-2:${AWS_ACCOUNT_ID}:livro-atualizado-topic"
   sqs:
-    livro-alugado-queue: livro-alugado-queue
-    livro-retornado-queue: livro-retornado-queue
+    livro-alugado-queue: livro-alugado-queue-catalog
+    livro-retornado-queue: livro-retornado-queue-catalog
 
 
 server:

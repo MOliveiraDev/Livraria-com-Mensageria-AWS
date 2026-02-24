@@ -3,6 +3,7 @@ package com.microsservice.rental_service.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Future;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,7 @@ public record RentalRequestDTO(
         String email,
         
         @NotNull(message = "Return date is required")
+        @Future(message = "Return date must be in the future")
         LocalDate returnDate
 ) {
 }

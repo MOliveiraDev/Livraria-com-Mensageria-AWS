@@ -2,6 +2,7 @@ package com.microsservice.catalog_service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 public record BookCatalogRequestDTO(
 
@@ -15,6 +16,7 @@ public record BookCatalogRequestDTO(
         String isbn,
         
         @NotNull(message = "Quantity is mandatory")
+        @PositiveOrZero(message = "Quantity must be zero or positive")
         Integer quantity
 ) {
 }

@@ -99,17 +99,30 @@ public class RentalService {
     @Transactional
     public BookReturnedResponseDTO sendBookReturnedEvent(BookReturnedRequestDTO request) {
         try {
-            RentalEntity rental = rentalRepository.findByEmailAndBookId(request.email(), request.bookIds().getFirst())
-                    .orElseThrow(() -> new RentalNotFoundException("Rental not found for email: " + request.email() + " and book ID: " + request.bookIds()));
+            if (request.bookIds() == null || request.bookIds().isEmpty()) {
+                throw new BookReturnedFailedException("No book IDs provided for return.");
+            }
 
-            rentalRepository.delete(rental);
+            for (Long bookId : request.bookIds()) {
+                RentalEntity rental = rentalRepository.findByEmailAndBookId(request.email(), bookId)
+                        .orElseThrow(() -> new RentalNotFoundException(
+                                "Rental not found for email: " + request.email() + " and book ID: " + bookId
+                        ));
 
-            BookReturnedCreatedEventDTO event = new BookReturnedCreatedEventDTO(
-                    request.bookIds(),
-                    request.email()
-            );
-            log.info("Enviando evento SNS: {}", event);
-            snsService.sendEvent(bookReturnedTopicArn, event);
+                rentalRepository.delete(rental);
+
+                String bookTitle = bookRepository.findById(bookId)
+                        .map(BookEntity::getTitle)
+                        .orElse("Unknown Book");
+
+                BookReturnedCreatedEventDTO event = new BookReturnedCreatedEventDTO(
+                        bookId,
+                        bookTitle,
+                        request.email()
+                );
+                log.info("Enviando evento SNS: {}", event);
+                snsService.sendEvent(bookReturnedTopicArn, event);
+            }
         } catch (Exception e) {
             log.error("Error processing book return: {}", e.getMessage());
             throw new BookReturnedFailedException("Failed to process book return: " + e.getMessage());

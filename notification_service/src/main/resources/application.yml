@@ -19,9 +19,10 @@ spring:
 aws:
   region: us-east-2
   sqs:
-    livro-alugado-queue: livro-alugado-queue-notification
-    livro-lembrete-queue: livro-lembrete-queue-notification
-    livro-retornado-queue: livro-retornado-queue-notification
+    livro-alugado-queue-notification: livro-alugado-queue-notification
+    livro-atualizado-queue-notification: livro-atualizado-queue-notification
+    livro-lembrete-queue-notification: livro-lembrete-queue-notification
+    livro-retornado-queue-notification: livro-retornado-queue-notification
 
 server:
   port: 8082

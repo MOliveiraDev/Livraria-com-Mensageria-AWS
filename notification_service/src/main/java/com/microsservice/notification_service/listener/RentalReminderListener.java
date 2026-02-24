@@ -7,6 +7,7 @@ import com.microsservice.notification_service.service.EmailService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,7 +18,7 @@ public class RentalReminderListener {
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
 
-    @SqsListener("${aws.sqs.livro-lembrete-queue}")
+    @SqsListener("${aws.sqs.livro-lembrete-queue-notification}")
     public void listen(String message) {
         try {
             log.info("Mensagem de lembrete recebida: {}", message);

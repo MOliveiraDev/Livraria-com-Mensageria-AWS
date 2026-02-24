@@ -17,7 +17,7 @@ public class RentalCreatedListener {
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
 
-    @SqsListener("${aws.sqs.livro-alugado-queue}")
+    @SqsListener("${aws.sqs.livro-alugado-queue-notification}")
     public void listen(String message) {
         try {
             log.info("Mensagem recebida: {}", message);

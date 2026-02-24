@@ -12,156 +12,87 @@ provider "aws" {
   region = var.aws_region
 }
 
-# SNS Topics
-resource "aws_sns_topic" "livro_criado" {
-  name = "livro-criado-topic"
+locals {
+  sns_topics = {
+    livro_criado               = "livro-criado-topic"
+    livro_atualizado           = "livro-atualizado-topic"
+    livro_alugado              = "livro-alugado-topic"
+    livro_retornado            = "livro-retornado-topic"
+    livro_lembrete_notification = "livro-lembrete-notification-topic"
+  }
+
+  sqs_queues = {
+    livro_criado_queue_notification = {
+      name      = "livro-criado-queue-notification"
+      topic_key = "livro_criado"
+    }
+    livro_criado_queue_catalog = {
+      name      = "livro-criado-queue-catalog"
+      topic_key = "livro_criado"
+    }
+    livro_atualizado_queue_notification = {
+      name      = "livro-atualizado-queue-notification"
+      topic_key = "livro_atualizado"
+    }
+    livro_atualizado_queue_catalog = {
+      name      = "livro-atualizado-queue-catalog"
+      topic_key = "livro_atualizado"
+    }
+    livro_alugado_queue_notification = {
+      name      = "livro-alugado-queue-notification"
+      topic_key = "livro_alugado"
+    }
+    livro_alugado_queue_catalog = {
+      name      = "livro-alugado-queue-catalog"
+      topic_key = "livro_alugado"
+    }
+    livro_retornado_queue_notification = {
+      name      = "livro-retornado-queue-notification"
+      topic_key = "livro_retornado"
+    }
+    livro_retornado_queue_catalog = {
+      name      = "livro-retornado-queue-catalog"
+      topic_key = "livro_retornado"
+    }
+    livro_lembrete_queue_notification = {
+      name      = "livro-lembrete-queue-notification"
+      topic_key = "livro_lembrete_notification"
+    }
+  }
 }
 
-resource "aws_sns_topic" "livro_atualizado" {
-  name = "livro-atualizado-topic"
+resource "aws_sns_topic" "topics" {
+  for_each = local.sns_topics
+  name     = each.value
 }
 
-resource "aws_sns_topic" "livro_alugado" {
-  name = "livro-alugado-topic"
+resource "aws_sqs_queue" "queues" {
+  for_each = local.sqs_queues
+  name     = each.value.name
 }
 
-resource "aws_sns_topic" "livro_lembrete" {
-  name = "livro-lembrete-topic"
-}
-
-resource "aws_sns_topic" "livro_retornado" {
-  name = "livro-retornado-topic"
-}
-
-# SQS Queues
-resource "aws_sqs_queue" "livro_alugado_queue" {
-  name = "livro-alugado-queue"
-}
-
-resource "aws_sqs_queue" "livro_retornado_queue" {
-  name = "livro-retornado-queue"
-}
-
-resource "aws_sqs_queue" "livro_lembrete_queue" {
-  name = "livro-lembrete-queue"
-}
-
-resource "aws_sqs_queue" "livro_criado_queue" {
-  name = "livro-criado-queue"
-}
-
-resource "aws_sqs_queue" "livro_atualizado_queue" {
-  name = "livro-atualizado-queue"
-}
-
-# SQS Policies
-resource "aws_sqs_queue_policy" "livro_alugado_policy" {
-  queue_url = aws_sqs_queue.livro_alugado_queue.id
+resource "aws_sqs_queue_policy" "queue_policies" {
+  for_each  = local.sqs_queues
+  queue_url = aws_sqs_queue.queues[each.key].id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
+      Effect    = "Allow"
       Principal = "*"
-      Action = "sqs:SendMessage"
-      Resource = aws_sqs_queue.livro_alugado_queue.arn
+      Action    = "sqs:SendMessage"
+      Resource  = aws_sqs_queue.queues[each.key].arn
       Condition = {
-        ArnEquals = { "aws:SourceArn" = aws_sns_topic.livro_alugado.arn }
+        ArnEquals = {
+          "aws:SourceArn" = aws_sns_topic.topics[each.value.topic_key].arn
+        }
       }
     }]
   })
 }
 
-resource "aws_sqs_queue_policy" "livro_retornado_policy" {
-  queue_url = aws_sqs_queue.livro_retornado_queue.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = "*"
-      Action = "sqs:SendMessage"
-      Resource = aws_sqs_queue.livro_retornado_queue.arn
-      Condition = {
-        ArnEquals = { "aws:SourceArn" = aws_sns_topic.livro_retornado.arn }
-      }
-    }]
-  })
-}
-
-resource "aws_sqs_queue_policy" "livro_lembrete_policy" {
-  queue_url = aws_sqs_queue.livro_lembrete_queue.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = "*"
-      Action = "sqs:SendMessage"
-      Resource = aws_sqs_queue.livro_lembrete_queue.arn
-      Condition = {
-        ArnEquals = { "aws:SourceArn" = aws_sns_topic.livro_lembrete.arn }
-      }
-    }]
-  })
-}
-
-resource "aws_sqs_queue_policy" "livro_criado_policy" {
-  queue_url = aws_sqs_queue.livro_criado_queue.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = "*"
-      Action = "sqs:SendMessage"
-      Resource = aws_sqs_queue.livro_criado_queue.arn
-      Condition = {
-        ArnEquals = { "aws:SourceArn" = aws_sns_topic.livro_criado.arn }
-      }
-    }]
-  })
-}
-
-resource "aws_sqs_queue_policy" "livro_atualizado_policy" {
-  queue_url = aws_sqs_queue.livro_atualizado_queue.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = "*"
-      Action = "sqs:SendMessage"
-      Resource = aws_sqs_queue.livro_atualizado_queue.arn
-      Condition = {
-        ArnEquals = { "aws:SourceArn" = aws_sns_topic.livro_atualizado.arn }
-      }
-    }]
-  })
-}
-
-# SNS Subscriptions
-resource "aws_sns_topic_subscription" "livro_alugado_sub" {
-  topic_arn = aws_sns_topic.livro_alugado.arn
+resource "aws_sns_topic_subscription" "topic_subscriptions" {
+  for_each  = local.sqs_queues
+  topic_arn = aws_sns_topic.topics[each.value.topic_key].arn
   protocol  = "sqs"
-  endpoint  = aws_sqs_queue.livro_alugado_queue.arn
-}
-
-resource "aws_sns_topic_subscription" "livro_retornado_sub" {
-  topic_arn = aws_sns_topic.livro_retornado.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.livro_retornado_queue.arn
-}
-
-resource "aws_sns_topic_subscription" "livro_lembrete_sub" {
-  topic_arn = aws_sns_topic.livro_lembrete.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.livro_lembrete_queue.arn
-}
-
-resource "aws_sns_topic_subscription" "livro_criado_sub" {
-  topic_arn = aws_sns_topic.livro_criado.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.livro_criado_queue.arn
-}
-
-resource "aws_sns_topic_subscription" "livro_atualizado_sub" {
-  topic_arn = aws_sns_topic.livro_atualizado.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.livro_atualizado_queue.arn
+  endpoint  = aws_sqs_queue.queues[each.key].arn
 }

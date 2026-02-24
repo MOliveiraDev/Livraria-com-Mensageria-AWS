@@ -9,7 +9,5 @@ import java.util.Optional;
 public interface RentalRepository extends JpaRepository<RentalEntity, Long> {
     List<RentalEntity> findByEmail(String email);
 
-    boolean existsByBookId(Long bookId);
-
     Optional<RentalEntity> findByEmailAndBookId(String email, Long bookId);
 }

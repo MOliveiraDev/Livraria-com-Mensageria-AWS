@@ -1,5 +1,6 @@
 package com.microsservice.rental_service.exception;
 
+import com.microsservice.rental_service.exception.book.BookReturnedFailedException;
 import com.microsservice.rental_service.exception.rental.BookNotFoundException;
 import com.microsservice.rental_service.exception.rental.RentalCreationException;
 import com.microsservice.rental_service.exception.rental.RentalNotFoundException;
@@ -42,5 +43,16 @@ public class GlobalExceptionHandler {
                 java.time.LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiException);
+    }
+
+    @ExceptionHandler(BookReturnedFailedException.class)
+    public ResponseEntity<ApiException> handleBookReturnedFailedException(BookReturnedFailedException e) {
+        ApiException apiException = new ApiException(
+                e.getMessage(),
+                "Book returned failed",
+                HttpStatus.BAD_REQUEST.value(),
+                java.time.LocalDateTime.now()
+        );
+        return ResponseEntity.badRequest().body(apiException);
     }
 }

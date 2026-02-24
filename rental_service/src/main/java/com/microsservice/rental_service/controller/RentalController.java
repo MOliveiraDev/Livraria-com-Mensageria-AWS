@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("api/v1/rentals")
@@ -22,7 +21,7 @@ public class RentalController {
     }
 
     @PostMapping("/createRental")
-    public ResponseEntity<CompletableFuture<RentalResponseDTO>> createRental(@RequestBody RentalRequestDTO rentalRequestDTO) {
+    public ResponseEntity<RentalResponseDTO> createRental(@RequestBody RentalRequestDTO rentalRequestDTO) {
         return ResponseEntity.ok(rentalService.createRental(rentalRequestDTO));
     }
 

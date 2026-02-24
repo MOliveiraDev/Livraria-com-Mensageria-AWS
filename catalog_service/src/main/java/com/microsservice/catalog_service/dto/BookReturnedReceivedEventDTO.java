@@ -1,11 +1,12 @@
 package com.microsservice.catalog_service.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record BookReturnedReceivedEventDTO(
-        @JsonProperty("bookId") Long bookId,
-        @JsonProperty ("email") String email,
-        @JsonProperty ("bookName") String bookName
+        Long bookId,
+        String email,
+        String bookTitle
 
 ) {
 }
